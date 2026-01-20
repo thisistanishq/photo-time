@@ -1,0 +1,1656 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>TIME Photo Booth</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@700;800;900&family=Grand+Hotel&display=swap"
+        rel="stylesheet">
+    <!-- SECURITY PROTOCOLS -->
+    <!-- Content Security Policy: Restrict sources to self and known CDNs (Google Fonts, etc.) -->
+    <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self' https:; script-src 'self' 'unsafe-inline' https:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: https:; font-src 'self' https: data:;">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+
+    <script>
+        (function () {
+            'use strict';
+
+            // --- 1. Toast Notification for Blocked Actions ---
+            const showSecurityToast = (msg) => {
+                // Remove existing to avoid stack
+                const existing = document.getElementById('sec-toast');
+                if (existing) existing.remove();
+
+                const toast = document.createElement('div');
+                toast.id = 'sec-toast';
+                toast.innerHTML = `<div style="display:flex; align-items:center; gap:10px;"><span style="font-size:20px;">🛡️</span> <span>${msg}</span></div>`;
+
+                // Styles to make it look "System" official
+                Object.assign(toast.style, {
+                    position: 'fixed',
+                    top: '20px',
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    backgroundColor: 'rgba(20, 20, 20, 0.95)',
+                    color: '#ff4444',
+                    padding: '12px 24px',
+                    borderRadius: '8px',
+                    fontFamily: 'monospace',
+                    fontSize: '14px',
+                    fontWeight: 'bold',
+                    zIndex: '2147483647', // Max z-index
+                    boxShadow: '0 5px 15px rgba(0,0,0,0.8)',
+                    backdropFilter: 'blur(10px)',
+                    border: '1px solid rgba(255, 68, 68, 0.3)',
+                    pointerEvents: 'none',
+                    userSelect: 'none'
+                });
+
+                document.body.appendChild(toast);
+                setTimeout(() => toast.remove(), 2500);
+            };
+
+            // --- 2. Disable Context Menu (Right Click) ---
+            document.addEventListener('contextmenu', function (e) {
+                e.preventDefault();
+                showSecurityToast("SECURITY ALERT: CONTEXT MENU DISABLED");
+                return false;
+            }, false);
+
+            // --- 3. Disable Keyboard Shortcuts (DevTools, Source, Save) ---
+            document.addEventListener('keydown', function (e) {
+                // F12 (DevTools)
+                if (e.key === 'F12' || e.keyCode === 123) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    showSecurityToast("🚫 DEVTOOLS ACCESS DENIED");
+                    return false;
+                }
+
+                // Ctrl/Cmd + Shift + I/J/C (Inspect Element, Console)
+                if ((e.ctrlKey || e.metaKey) && e.shiftKey) {
+                    const key = e.key.toLowerCase();
+                    if (['i', 'j', 'c'].includes(key)) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        showSecurityToast("🚫 SYSTEM INTEGRITY: INSPECT BLOCKED");
+                        return false;
+                    }
+                }
+
+                // Ctrl/Cmd + U (View Source), S (Save), P (Print)
+                if (e.ctrlKey || e.metaKey) {
+                    const key = e.key.toLowerCase();
+                    if (['u', 's', 'p'].includes(key)) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        showSecurityToast("🚫 ACTION RESTRICTED");
+                        return false;
+                    }
+                }
+            }, true); // Capture phase to intercept early
+
+            // --- 4. Console Clearing & Anti-Debugging ---
+            // Nuke console functions to prevent logging analysis if they force it open
+            /*
+            const noop = () => {};
+            ['log', 'debug', 'info', 'warn', 'error', 'table', 'trace'].forEach(method => {
+                console[method] = noop;
+            });
+            */
+            setInterval(function () {
+                // console.clear(); // Keep clearing it
+            }, 1000);
+
+            // --- 5. "Debugger" Loop Strategy ---
+            // This annoying check pauses execution if DevTools is open and paused on exceptions/debugger
+            setInterval(function () {
+                const t = new Date().getTime();
+                // debugger; // Triggers breakpoint if DevTools is open
+                if (new Date().getTime() - t > 200) {
+                    // Execution paused (user stepped through or debugger hit), likely DevTools open
+                    document.body.innerHTML = '<div style="background:#000;color:red;height:100vh;display:flex;align-items:center;justify-content:center;font-family:monospace;font-size:30px;flex-direction:column;text-align:center;"><div style="font-size:60px;margin-bottom:20px;">⚠️</div><div>ILLEGAL DEBUGGING DETECTED</div><div style="font-size:14px;color:#666;margin-top:20px;">Session Terminated.</div></div>';
+                }
+            }, 2000);
+
+        })();
+    </script>
+    <style>
+        :root {
+            --bg-floor: #f5f5f5;
+
+            /* --- UPDATED EXACT BLUE COLORS --- */
+            /* Sampled directly from the reference image */
+            --teal-edge: #7BBCC1;
+            /* Darker edge for shadow */
+            --teal-mid: #93D5DC;
+            /* Main mid-tone */
+            --teal-light: #A4E3E8;
+            /* Lighter highlight center */
+
+            /* Roof */
+            --roof-grad: linear-gradient(180deg, #555 0%, #2b2b2b 25%, #111 100%);
+
+            /* Base */
+            --cream-strip: #F2E8D5;
+
+            /* Decor */
+            --paper-bg: #F4E5CC;
+            --awning-red: #D85650;
+            --awning-white: #FEFEFE;
+            --sticker-outline: #1a1a1a;
+
+            /* Yellow Tag */
+            --yellow-color: #FFD700;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-floor);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            width: 100vw;
+            font-family: 'Nunito', sans-serif;
+            overflow: hidden;
+        }
+
+        /* CONTAINER */
+        .booth-container {
+            width: 100%;
+            max-width: 800px;
+            height: 100dvh;
+            position: relative;
+            flex-shrink: 0;
+            filter: drop-shadow(0 50px 40px rgba(0, 0, 0, 0.3));
+            margin: 0 auto;
+        }
+
+        /* --- MOBILE RESPONSIVENESS --- */
+        @media (max-width: 600px) {
+            .roof-assembly {
+                height: 60px;
+            }
+
+            .roof-plate {
+                height: 35px;
+            }
+
+            .logo-text {
+                font-size: 18px;
+            }
+
+            .logo-svg {
+                width: 28px;
+                height: 26px;
+            }
+
+            .body-shell {
+                top: 60px;
+                height: calc(100% - 60px - 25px);
+                /* Adjusted for smaller base */
+                padding: 15px 10px 0 10px;
+            }
+
+            /* Adjust left column */
+            .col-left {
+                width: 35%;
+                /* Shrink artwork side slightly */
+            }
+
+            .col-right {
+                width: 65%;
+                /* Give more room to curtain/booth */
+                padding-left: 5px;
+            }
+
+            .st-time {
+                font-size: 18px;
+            }
+
+            .st-studio {
+                font-size: 14px;
+            }
+
+            .yellow-tag {
+                left: unset;
+                right: -10px;
+                /* Move tag to avoid overlap */
+                top: 5px;
+                width: 35px;
+                height: 35px;
+            }
+
+            .paper-menu {
+                transform: scale(0.85) rotate(-1.5deg);
+                margin-left: -10px;
+            }
+
+            .base-assembly {
+                height: 25px;
+            }
+
+            .base-lip {
+                height: 20px;
+            }
+
+            .wheels {
+                display: none;
+                /* Hide wheels on mobile to save space */
+            }
+
+            /* Adjust Printer Slot */
+            .printer-assembly {
+                transform: translateX(-50%) scale(0.85);
+                top: -5px;
+            }
+
+            .shelf-zone {
+                height: 15%;
+            }
+
+            .curtain-zone {
+                height: 85%;
+            }
+        }
+
+        /* =========================================
+           1. ROOF
+           ========================================= */
+        .roof-assembly {
+            position: absolute;
+            top: 0;
+            left: -2.5%;
+            width: 105%;
+            height: 80px;
+            z-index: 60;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .roof-rim-top {
+            width: 100%;
+            height: 20px;
+            background: var(--roof-grad);
+            border-radius: 12px 12px 4px 4px;
+            border-top: 1px solid rgba(255, 255, 255, 0.4);
+            box-shadow: 0 4px 5px rgba(0, 0, 0, 0.5);
+            z-index: 3;
+        }
+
+        .roof-plate {
+            width: 96%;
+            height: 42px;
+            margin: 0 auto;
+            background: #202020;
+            box-shadow: inset 0 5px 15px rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .roof-rim-btm {
+            width: 100%;
+            height: 18px;
+            background: linear-gradient(180deg, #333 0%, #111 100%);
+            border-radius: 2px 2px 10px 10px;
+            border-top: 1px solid rgba(255, 255, 255, 0.15);
+            border-bottom: 2px solid #000;
+            z-index: 3;
+        }
+
+        .logo-svg {
+            width: 34px;
+            height: 32px;
+            filter: drop-shadow(0 2px 3px #000);
+        }
+
+        .logo-text {
+            font-family: 'Fredoka One';
+            font-size: 26px;
+            letter-spacing: 0.5px;
+            color: #fff;
+            text-shadow: 2px 2px 0 #000, -1px -1px 0 #000;
+            display: flex;
+            align-items: center;
+        }
+
+        .c-y {
+            color: #FFEB3B;
+        }
+
+        .c-p {
+            color: #E91E63;
+        }
+
+        .c-o {
+            color: #FF9800;
+        }
+
+        /* =========================================
+           2. MAIN BODY (Updated Color)
+           ========================================= */
+        .body-shell {
+            position: absolute;
+            top: 78px;
+            width: 100%;
+            height: calc(100% - 78px - 40px);
+            /* Leave 40px for base */
+            /* UPDATED GRADIENT TO MATCH IMAGE EXACTLY */
+            background: linear-gradient(90deg,
+                    var(--teal-edge) 0%,
+                    var(--teal-mid) 20%,
+                    var(--teal-light) 50%,
+                    var(--teal-mid) 80%,
+                    var(--teal-edge) 100%);
+            display: flex;
+            padding: 30px 20px 0 20px;
+            z-index: 10;
+        }
+
+
+
+        .body-shell::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(120deg, rgba(255, 255, 255, 0.15) 0%, transparent 40%);
+            pointer-events: none;
+            z-index: 40;
+        }
+
+        /* --- LEFT SIDE --- */
+        .col-left {
+            width: 43%;
+            position: relative;
+            z-index: 20;
+            padding-right: 5px;
+        }
+
+        /* Sticker Area */
+        .sticker-stack {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            position: relative;
+            z-index: 10;
+        }
+
+        .st-studio {
+            font-family: 'Fredoka One';
+            color: #333;
+            font-size: 20px;
+            line-height: 1;
+            z-index: 10;
+            -webkit-text-stroke: 0.5px #fff;
+        }
+
+        .st-time {
+            font-family: 'Fredoka One';
+            color: #fff;
+            font-size: 26px;
+            line-height: 1;
+            z-index: 10;
+            margin-top: -2px;
+            text-shadow: 3px 3px 0 #111, -1px -1px 0 #111, 1px -1px 0 #111, -1px 1px 0 #111, 1px 1px 0 #111;
+        }
+
+        /* YELLOW TAG - MOVED DOWN */
+        .yellow-tag {
+            position: absolute;
+            top: 15px;
+            left: 145px;
+            width: 45px;
+            height: 45px;
+            background: var(--yellow-color);
+            border-radius: 50%;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1.5px solid #000;
+            box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.2);
+        }
+
+        .tag-text {
+            font-size: 9px;
+            font-weight: 900;
+            writing-mode: vertical-rl;
+            transform: rotate(180deg);
+            color: #000;
+            letter-spacing: 0.5px;
+        }
+
+        .badges {
+            margin-top: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            align-items: flex-start;
+        }
+
+        .bg-blk {
+            background: #1a1a1a;
+            color: #fff;
+            padding: 3px 8px;
+            font-size: 10px;
+            font-weight: 900;
+            transform: rotate(-2deg);
+            box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.2);
+        }
+
+        /* Paper Menu */
+        .paper-menu {
+            position: relative;
+            margin-top: 15px;
+            width: 100%;
+            height: 240px;
+            background: var(--paper-bg);
+            border: 3px solid #5D4037;
+            border-radius: 12px;
+            transform: rotate(-1.5deg);
+            padding: 10px;
+            box-shadow: 2px 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .clip {
+            position: absolute;
+            top: -12px;
+            left: 38%;
+            width: 25px;
+            height: 12px;
+            background: #AAA;
+            border: 2px solid #444;
+            border-radius: 10px;
+        }
+
+        .menu-head {
+            display: flex;
+            gap: 2px;
+            margin-bottom: 2px;
+        }
+
+        .blk {
+            font-family: 'Fredoka One';
+            color: #fff;
+            background: #F4511E;
+            border: 1.5px solid #000;
+            padding: 0 3px;
+            font-size: 14px;
+            border-radius: 3px;
+            transform: rotate(-3deg);
+        }
+
+        .blk:nth-child(even) {
+            background: #fff;
+            color: #F4511E;
+            transform: rotate(2deg);
+        }
+
+        .menu-sub {
+            font-size: 6px;
+            font-weight: 900;
+            margin-bottom: 8px;
+            line-height: 1;
+            margin-left: 2px;
+            text-transform: uppercase;
+        }
+
+        .ln-row {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            margin-bottom: 6px;
+        }
+
+        .dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            border: 1px solid #999;
+            flex-shrink: 0;
+        }
+
+        .line {
+            height: 3px;
+            background: #C8B7A6;
+            border-radius: 2px;
+            width: 100%;
+        }
+
+        .panda {
+            position: absolute;
+            bottom: 8px;
+            left: 8px;
+            width: 34px;
+            height: 28px;
+            background: #fff;
+            border: 2px solid #222;
+            border-radius: 50% 50% 40% 40%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 4px;
+            z-index: 2;
+        }
+
+        .eye {
+            width: 6px;
+            height: 6px;
+            background: #000;
+            border-radius: 50%;
+        }
+
+        .footer-txt {
+            position: absolute;
+            bottom: 8px;
+            left: 45px;
+            font-size: 5px;
+            font-weight: 900;
+            line-height: 1.1;
+        }
+
+        .script-logo {
+            position: absolute;
+            bottom: 30px;
+            left: 10px;
+            font-family: 'Grand Hotel', cursive;
+            color: #fff;
+            font-size: 48px;
+            transform: rotate(-8deg);
+            text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.1);
+            line-height: 0.8;
+        }
+
+        .swoosh {
+            position: absolute;
+            bottom: 5px;
+            left: 10px;
+            width: 100px;
+            height: 15px;
+            border-top: 4px solid #fff;
+            border-radius: 50%;
+        }
+
+        /* --- RIGHT SIDE --- */
+        .col-right {
+            width: 57%;
+            padding-left: 10px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .awning {
+            width: 100%;
+            height: 24px;
+            background: repeating-linear-gradient(90deg, var(--awning-red) 0%, var(--awning-red) 20%, var(--awning-white) 20%, var(--awning-white) 40%);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            position: relative;
+            z-index: 15;
+            border-radius: 2px;
+        }
+
+        .booth-opening {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            background: #222;
+            border-left: 1px solid rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 1. CURTAIN ZONE (Upper 82%) */
+        .curtain-zone {
+            width: 100%;
+            height: 82%;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* High Quality Rod */
+        .curtain-rod {
+            position: absolute;
+            top: 6px;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(to bottom, #d0d0d0, #f0f0f0 40%, #999 100%);
+            z-index: 20;
+            box-shadow: 0 2px 3px rgba(0, 0, 0, 0.6);
+        }
+
+        /* REALISTIC CURTAIN CSS */
+        .curtain {
+            width: 50%;
+            height: 100%;
+            background: #fafafa;
+            position: absolute;
+            top: 0;
+            /* Folds */
+            background-image: repeating-linear-gradient(90deg,
+                    #dcdcdc 0px,
+                    #ffffff 15px,
+                    #ffffff 35px,
+                    #dcdcdc 50px);
+            /* Physics Transition: Bunching */
+            transition: transform 1.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+            transform-origin: top center;
+            z-index: 15;
+            box-shadow: 0 10px 10px rgba(0, 0, 0, 0.4);
+        }
+
+        .curtain.left {
+            left: 0;
+            border-right: 1px solid #bbb;
+            transform-origin: left;
+        }
+
+        .curtain.right {
+            right: 0;
+            border-left: 1px solid #bbb;
+            transform-origin: right;
+        }
+
+        .grommet {
+            position: absolute;
+            top: 2px;
+            width: 12px;
+            height: 12px;
+            border: 2px solid #444;
+            border-radius: 50%;
+            background: transparent;
+            z-index: 25;
+            box-shadow: 0 1px 1px rgba(255, 255, 255, 0.8);
+        }
+
+        /* Sticker Layer */
+        .sticker-layer {
+            position: absolute;
+            top: 0;
+            width: 200%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            pointer-events: none;
+            transition: opacity 1.5s ease;
+        }
+
+        .curtain.left .sticker-layer {
+            left: 0;
+        }
+
+        .curtain.right .sticker-layer {
+            left: -100%;
+        }
+
+        .art-t {
+            margin-top: 60px;
+            display: flex;
+            gap: 5px;
+        }
+
+        .svg-txt {
+            height: 30px;
+            filter: drop-shadow(1px 1px 0 #000);
+        }
+
+        .art-faces {
+            margin-top: 8px;
+        }
+
+        .art-box {
+            background: #111;
+            color: #fff;
+            padding: 3px 8px;
+            font-family: 'Fredoka One';
+            font-size: 14px;
+            transform: rotate(-1deg);
+            margin-top: 5px;
+        }
+
+        .art-flowers {
+            position: absolute;
+            bottom: 20px;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        /* Interior */
+        /* Interior */
+        .interior-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            /* Dark background for iframe context */
+            border-left: 8px solid #999;
+            border-right: 8px solid #999;
+            z-index: 1;
+            overflow: hidden;
+            /* Ensure iframe doesn't overflow */
+        }
+
+        .screen-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: block;
+        }
+
+        /* 2. SHELF ZONE */
+        .shelf-zone {
+            width: 100%;
+            height: 18%;
+            background: #CDBBA7;
+            border-top: 5px solid #B09B88;
+            box-shadow: inset 0 5px 15px rgba(0, 0, 0, 0.2);
+            position: relative;
+            z-index: 30;
+            /* Boost above curtains/screen */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            padding-bottom: 15px;
+        }
+
+        .photo-row {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 10px;
+        }
+
+        .p-card {
+            width: 30px;
+            height: 40px;
+            background: #fff;
+            border: 1px solid #999;
+            padding: 2px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .p-inner {
+            width: 100%;
+            height: 80%;
+            background: #ccc;
+        }
+
+        /* PRINTER ASSEMBLY */
+        .printer-assembly {
+            position: absolute;
+            top: -12px;
+            /* Positioned at the top edge, slightly overlapping Screen */
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 20;
+            perspective: 800px;
+        }
+
+        .printer-slot {
+            width: 140px;
+            height: 18px;
+            background: #1a1a1a;
+            border-radius: 4px;
+            /* 3D Bezel Effect */
+            border-top: 1px solid #444;
+            border-bottom: 3px solid #666;
+            /* Light hitting bottom lip */
+            box-shadow:
+                0 4px 6px rgba(0, 0, 0, 0.4),
+                inset 0 10px 10px rgba(0, 0, 0, 0.9);
+            position: relative;
+            z-index: 30;
+        }
+
+        /* The darkness inside the slot */
+        .printer-slot::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 130px;
+            height: 6px;
+            background: #000;
+            border-radius: 2px;
+            box-shadow: inset 0 0 5px #000;
+        }
+
+        .contact-sheet {
+            position: absolute;
+            top: 8px;
+            /* Start aligned with slot hole */
+            left: 50%;
+            width: 90px;
+            height: auto;
+            background: #fff;
+            padding: 5px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            z-index: 25;
+
+            /* Initial State: Hidden and folded 'inside' */
+            transform: translateX(-50%) translateY(-100%) rotateX(-10deg);
+            transform-origin: top center;
+            opacity: 0;
+
+            /* We will use a class to trigger the realistic sequence */
+        }
+
+        .printer-clipper {
+            position: absolute;
+            top: 15px;
+            /* Tucked under slot lip */
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120px;
+            height: 400px;
+            /* Allow long drop */
+            overflow: hidden;
+            z-index: 25;
+            /* Below slot (30) */
+            pointer-events: none;
+            /* Allow clicks to pass if needed, but wrapper shouldn't block */
+            /* Debug: border: 1px solid green; */
+        }
+
+        .contact-sheet {
+            pointer-events: auto;
+            /* Ensure clickable */
+        }
+
+        /* Animation Sequence */
+        /* Animation Sequence with Physics */
+        .contact-sheet.printing {
+            opacity: 1;
+            animation:
+                printEject 2s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards,
+                /* Elastic bounce out */
+                paperSway 4s ease-in-out infinite 2s;
+            /* Gentle residual sway */
+        }
+
+        @keyframes printEject {
+            0% {
+                transform: translateX(-50%) translateY(-110%) rotateX(-15deg);
+            }
+
+            40% {
+                transform: translateX(-50%) translateY(-60%) rotateX(0deg);
+                /* Fast eject part way */
+            }
+
+            60% {
+                transform: translateX(-50%) translateY(-45%) rotateX(5deg);
+                /* Overshoot slightly */
+            }
+
+            80% {
+                transform: translateX(-50%) translateY(-52%) rotateX(-2deg);
+                /* Correct */
+            }
+
+            100% {
+                transform: translateX(-50%) translateY(-50%) rotateX(0deg);
+                /* Settle at HALF out */
+            }
+        }
+
+        @keyframes paperSway {
+
+            0%,
+            100% {
+                transform: translateX(-50%) translateY(-50%) rotateZ(0deg) rotateX(0deg);
+            }
+
+            25% {
+                transform: translateX(-50%) translateY(-50%) rotateZ(0.5deg) rotateX(1deg);
+            }
+
+            75% {
+                transform: translateX(-50%) translateY(-50%) rotateZ(-0.5deg) rotateX(1deg);
+            }
+        }
+
+        .strip-photo {
+            width: 100%;
+            height: 60px;
+            background: #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+
+
+        /* =========================================
+           3. BASE
+           ========================================= */
+        .base-assembly {
+            position: absolute;
+            bottom: 0;
+            top: auto;
+            width: 100%;
+            height: 40px;
+            z-index: 20;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .base-cream {
+            width: 100%;
+            height: 12px;
+            background: var(--cream-strip);
+            position: relative;
+            z-index: 10;
+            box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+        }
+
+        .base-lip {
+            width: 100%;
+            height: 28px;
+            background: var(--teal-mid);
+            border-bottom-left-radius: 15px;
+            border-bottom-right-radius: 15px;
+            position: relative;
+            z-index: 10;
+            border-top: 1px solid rgba(0, 0, 0, 0.05);
+            background: linear-gradient(90deg, var(--teal-edge) 0%, var(--teal-mid) 20%, var(--teal-mid) 80%, var(--teal-edge) 100%);
+            box-shadow: inset 0 -2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .wheels {
+            position: absolute;
+            top: 12px;
+            width: 100%;
+            padding: 0 50px;
+            display: flex;
+            justify-content: space-between;
+            z-index: 1;
+        }
+
+        .wheel-unit {
+            width: 22px;
+            height: 32px;
+            position: relative;
+        }
+
+        .w-stem {
+            width: 8px;
+            height: 10px;
+            background: #222;
+            margin-left: 7px;
+        }
+
+        .w-roll {
+            width: 22px;
+            height: 22px;
+            background: radial-gradient(circle at 40% 40%, #555, #111);
+            border-radius: 5px;
+            box-shadow: 0 4px 5px rgba(0, 0, 0, 0.5);
+            margin-top: -2px;
+        }
+
+        /* Animation */
+        .curtain.open.left {
+            transform: translateX(-90%) scaleX(0.35);
+        }
+
+        .curtain.open.right {
+            transform: translateX(90%) scaleX(0.35);
+        }
+
+        .curtain.open .sticker-layer {
+            opacity: 0.6;
+        }
+
+        /* DOWNLOAD MODAL */
+        #downloadModal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        #downloadModal.show {
+            display: flex;
+            opacity: 1;
+        }
+
+        .modal-content {
+            background: #fff;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            max-width: 90%;
+            max-height: 90vh;
+            overflow: auto;
+            position: relative;
+            transform: scale(0.9);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        #downloadModal.show .modal-content {
+            transform: scale(1);
+        }
+
+        .modal-img-container {
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            padding: 5px;
+            background: #f9f9f9;
+        }
+
+        .modal-img-container img {
+            max-height: 60vh;
+            width: auto;
+            display: block;
+        }
+
+        .modal-btn {
+            background: #FF2E63;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1.1rem;
+            border-radius: 30px;
+            cursor: pointer;
+            font-family: 'Fredoka One', cursive;
+            margin: 0 10px;
+            transition: transform 0.2s;
+        }
+
+        .modal-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 46, 99, 0.4);
+        }
+
+        .close-modal {
+            background: #333;
+        }
+
+        /* MOBILE OPTIMIZATIONS */
+        @media (max-width: 768px) {
+            body {
+                height: auto;
+                overflow-y: auto;
+                background: var(--bg-floor);
+            }
+
+            .booth-container {
+                width: 100%;
+                height: auto;
+                min-height: 100vh;
+                filter: none;
+            }
+
+            .body-shell {
+                flex-direction: column-reverse;
+                /* Screen on Top */
+                top: 60px;
+                height: auto;
+                padding: 10px;
+                background: linear-gradient(180deg, var(--teal-edge) 0%, var(--teal-mid) 100%);
+            }
+
+            .roof-assembly {
+                width: 100%;
+                left: 0;
+                height: 60px;
+            }
+
+            .roof-rim-top {
+                height: 15px;
+            }
+
+            .roof-plate {
+                height: 35px;
+            }
+
+            .col-right {
+                width: 100%;
+                height: 60vh;
+                /* Interact Area */
+                padding-left: 0;
+                margin-bottom: 20px;
+            }
+
+            .col-left {
+                width: 100%;
+                padding-right: 0;
+                display: flex;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 15px;
+            }
+
+            .sticker-stack {
+                align-items: center;
+                width: 100%;
+                margin-bottom: 10px;
+            }
+
+            .st-time {
+                font-size: 32px;
+            }
+
+            .paper-menu {
+                display: none;
+            }
+
+            .script-logo {
+                position: relative;
+                bottom: auto;
+                left: auto;
+                transform: rotate(0);
+                text-align: center;
+                width: 100%;
+                margin-top: 10px;
+                font-size: 32px;
+            }
+
+            .swoosh {
+                left: 50%;
+                transform: translateX(-50%);
+            }
+
+            .badges {
+                flex-direction: row;
+            }
+
+            .curtain-zone {
+                height: 85%;
+            }
+
+            .shelf-zone {
+                height: 15%;
+            }
+
+            .photo-row {
+                display: none;
+            }
+
+            /* --- Download Modal Overlay (User Style) --- */
+            #downloadModal {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.85);
+                z-index: 1000;
+                justify-content: center;
+                align-items: center;
+                flex-direction: column;
+                opacity: 0;
+                transition: opacity 0.3s ease;
+            }
+
+            #downloadModal.show {
+                display: flex;
+                opacity: 1;
+            }
+
+            .modal-content {
+                background: #fff;
+                padding: 20px;
+                border-radius: 12px;
+                text-align: center;
+                max-width: 90%;
+                max-height: 90vh;
+                overflow: auto;
+                position: relative;
+                transform: scale(0.9);
+                transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            }
+
+            #downloadModal.show .modal-content {
+                transform: scale(1);
+            }
+
+            .modal-img-container {
+                margin-bottom: 20px;
+                border: 1px solid #ddd;
+                padding: 5px;
+                background: #f9f9f9;
+            }
+
+            .modal-img-container img {
+                max-height: 60vh;
+                width: auto;
+                display: block;
+            }
+
+            .modal-btn {
+                background: #FF2E63;
+                color: white;
+                border: none;
+                padding: 12px 30px;
+                font-size: 1.1rem;
+                border-radius: 30px;
+                cursor: pointer;
+                font-family: 'Fredoka One', cursive;
+                margin: 0 10px;
+                transition: transform 0.2s;
+            }
+
+            .modal-btn:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 5px 15px rgba(255, 46, 99, 0.4);
+            }
+
+            .close-modal {
+                background: #333;
+            }
+
+            #printer-interaction-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100vw;
+                height: 100vh;
+                z-index: 9000;
+                cursor: pointer;
+                display: none;
+                background: transparent;
+            }
+    </style>
+</head>
+
+<body>
+    <!-- Download Modal -->
+    <div id="downloadModal">
+        <div class="modal-content">
+            <h2 style="font-family: 'Fredoka One'; margin-bottom: 5px; color: #333; font-size:1.5rem">Here's your Print!
+            </h2>
+            <p style="color:#666; font-size:0.9rem; margin-bottom:20px;">Hot fresh from the lab.</p>
+            <div class="modal-img-container">
+                <img id="modalImage" src="" alt="Your Photo Strip">
+            </div>
+            <div>
+                <button class="modal-btn btn-download" onclick="triggerDownload()">Save Image</button>
+                <button class="modal-btn btn-close" onclick="closeModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+
+
+    <div class="booth-container">
+
+        <!-- ROOF -->
+        <div class="roof-assembly">
+            <div class="roof-rim-top"></div>
+            <div class="roof-plate">
+                <svg class="logo-svg" viewBox="0 0 40 35">
+                    <rect x="23" y="2" width="10" height="8" fill="white" stroke="black" stroke-width="2"
+                        transform="rotate(10 28 6)" />
+                    <rect x="2" y="11" width="36" height="22" rx="4" fill="#00E676" stroke="black" stroke-width="2" />
+                    <rect x="24" y="7" width="8" height="6" fill="#00E676" stroke="black" stroke-width="2" />
+                    <circle cx="20" cy="22" r="7" fill="#00E676" stroke="black" stroke-width="2" />
+                    <circle cx="20" cy="22" r="5" fill="none" stroke="black" stroke-width="1.5" />
+                    <circle cx="20" cy="22" r="2.5" fill="#222" />
+                </svg>
+                <div class="logo-text">
+                    <span class="c-y">T</span><span class="c-p">i</span><span class="c-o">M</span><span
+                        class="c-p">E</span>
+                    <span style="color:white; margin-left:5px;">PHOTO</span>
+                </div>
+            </div>
+            <div class="roof-rim-btm"></div>
+        </div>
+
+        <!-- MAIN BODY -->
+        <div class="body-shell">
+
+            <!-- LEFT PANEL -->
+            <div class="col-left">
+                <div class="sticker-stack">
+                    <div class="st-studio">STUDIO ★</div>
+                    <div class="st-time">TIME PHOTO</div>
+                    <div class="yellow-tag">
+                        <div class="tag-text">(STUDIO)</div>
+                    </div>
+                </div>
+
+                <div class="badges">
+                    <div class="bg-blk">PHOTOBOOTH ★</div>
+                    <div class="bg-blk">SHOW YOURSELF</div>
+                </div>
+
+                <div class="paper-menu">
+                    <div class="clip"></div>
+                    <div class="menu-head">
+                        <div class="blk">T</div>
+                        <div class="blk">I</div>
+                        <div class="blk">M</div>
+                        <div class="blk">E</div>
+                    </div>
+                    <div class="menu-sub">PHOTOGRAPHY<br>ooosee</div>
+                    <div class="ln-row">
+                        <div class="dot" style="background:#FFA726"></div>
+                        <div class="line"></div>
+                    </div>
+                    <div class="ln-row">
+                        <div class="line" style="width:70%"></div>
+                    </div>
+                    <div class="ln-row">
+                        <div class="dot" style="background:#EF5350"></div>
+                        <div class="line" style="width:90%"></div>
+                    </div>
+                    <div class="ln-row">
+                        <div class="line"></div>
+                    </div>
+                    <div class="ln-row">
+                        <div class="dot" style="background:#42A5F5"></div>
+                        <div class="line" style="width:80%"></div>
+                    </div>
+                    <div class="ln-row">
+                        <div class="line"></div>
+                    </div>
+
+                    <div class="panda">
+                        <div class="eye"></div>
+                        <div class="eye"></div>
+                    </div>
+                    <div class="footer-txt">TAKE A LOOK HERE AND<br>TAKE A PHOTO</div>
+                </div>
+
+                <div class="script-logo">Photo<br><span style="margin-left:40px">Time</span>
+                    <div class="swoosh"></div>
+                </div>
+            </div>
+
+            <!-- RIGHT PANEL -->
+            <div class="col-right">
+                <div class="awning"></div>
+
+                <div class="booth-opening">
+                    <!-- CURTAIN ZONE -->
+                    <div class="curtain-zone">
+                        <div class="curtain-rod"></div>
+
+                        <!-- Left Curtain -->
+                        <div class="curtain left" id="c-left">
+                            <div class="grommet" style="left:20%"></div>
+                            <div class="grommet" style="left:70%"></div>
+                            <div class="sticker-layer">
+                                <div class="art-t">
+                                    <svg class="logo-svg" viewBox="0 0 60 30"><text x="0" y="25"
+                                            font-family="Fredoka One" font-size="22" fill="#FFB74D" stroke="black"
+                                            stroke-width="1.5">Tin</text><text x="35" y="25" font-family="Fredoka One"
+                                            font-size="22" fill="#AED581" stroke="black"
+                                            stroke-width="1.5">e</text></svg>
+                                    <svg class="logo-svg" viewBox="0 0 60 30"><text x="0" y="25"
+                                            font-family="Fredoka One" font-size="22" fill="#FFB74D" stroke="black"
+                                            stroke-width="1.5">booth</text></svg>
+                                </div>
+                                <div class="art-faces">
+                                    <svg width="100" height="40" viewBox="0 0 100 40">
+                                        <circle cx="30" cy="20" r="15" fill="white" stroke="black" stroke-width="1.5" />
+                                        <path d="M20 15 Q30 5 40 15" stroke="black" fill="none" stroke-width="2" />
+                                        <circle cx="25" cy="18" r="1.5" fill="black" />
+                                        <circle cx="35" cy="18" r="1.5" fill="black" />
+                                        <path d="M15 20 L10 25" stroke="#E91E63" stroke-width="1.5" />
+                                        <circle cx="70" cy="20" r="15" fill="white" stroke="black" stroke-width="1.5" />
+                                        <path d="M60 12 Q70 2 80 12" stroke="black" fill="none" stroke-width="2" />
+                                        <circle cx="65" cy="18" r="1.5" fill="black" />
+                                        <circle cx="75" cy="18" r="1.5" fill="black" />
+                                        <path d="M85 10 L90 5 M90 10 L95 5" stroke="#E91E63" stroke-width="1.5" />
+                                    </svg>
+                                </div>
+                                <div class="art-box">SHOWYOURSELF</div>
+                                <div class="art-flowers">
+                                    <svg width="20" height="30">
+                                        <path d="M10 15 L10 30" stroke="#4CAF50" stroke-width="2" />
+                                        <path d="M5 5 Q10 15 15 5 L12 10 L8 10 Z" fill="#EF5350" stroke="black" />
+                                    </svg>
+                                    <svg width="20" height="30">
+                                        <path d="M10 15 L10 30" stroke="#4CAF50" stroke-width="2" />
+                                        <path d="M5 5 Q10 15 15 5 L12 10 L8 10 Z" fill="#FFEE58" stroke="black" />
+                                    </svg>
+                                    <svg width="20" height="30">
+                                        <path d="M10 15 L10 30" stroke="#4CAF50" stroke-width="2" />
+                                        <path d="M5 5 Q10 15 15 5 L12 10 L8 10 Z" fill="#42A5F5" stroke="black" />
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="curtain right" id="c-right">
+                            <div class="grommet" style="left:20%"></div>
+                            <div class="grommet" style="left:70%"></div>
+                            <div class="sticker-layer">
+                                <div class="art-t">
+                                    <svg class="logo-svg" viewBox="0 0 60 30"><text x="0" y="25"
+                                            font-family="Fredoka One" font-size="22" fill="#FFB74D" stroke="black"
+                                            stroke-width="1.5">Time</text></svg>
+                                    <svg class="logo-svg" viewBox="0 0 60 30"><text x="0" y="25"
+                                            font-family="Fredoka One" font-size="22" fill="#FFB74D" stroke="black"
+                                            stroke-width="1.5">booth</text></svg>
+                                </div>
+                                <div class="art-faces"><svg width="100" height="40"></svg></div>
+                                <div class="art-box">SHOW YOURSELF</div>
+                                <div class="art-flowers">
+                                    <svg width="20" height="30" style="margin-left:60px;">
+                                        <path d="M10 15 L10 30" stroke="#4CAF50" stroke-width="2" />
+                                        <path d="M5 5 Q10 15 15 5 L12 10 L8 10 Z" fill="#EF5350" stroke="black" />
+                                    </svg>
+                                    <svg width="20" height="30">
+                                        <path d="M10 15 L10 30" stroke="#4CAF50" stroke-width="2" />
+                                        <path d="M5 5 Q10 15 15 5 L12 10 L8 10 Z" fill="#42A5F5" stroke="black" />
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Screen (Behind) -->
+                        <div class="interior-screen">
+                            <iframe src="photobooth/layout.html" class="screen-iframe"></iframe>
+                        </div>
+                    </div>
+
+                    <!-- SHELF ZONE -->
+                    <div class="shelf-zone">
+                        <div class="photo-row">
+                            <div class="p-card">
+                                <div class="p-inner"></div>
+                            </div>
+                            <div class="p-card">
+                                <div class="p-inner"></div>
+                            </div>
+                            <div class="p-card">
+                                <div class="p-inner"></div>
+                            </div>
+                        </div>
+                        <!-- Mask removed -->
+                        <div class="printer-assembly">
+                            <div class="printer-slot"></div>
+                            <!-- Clipper Wrapper -->
+                            <div class="printer-clipper">
+                                <div class="contact-sheet" id="photo-strip">
+                                    <div class="strip-photo"></div>
+                                    <div class="strip-photo"></div>
+                                    <div class="strip-photo"></div>
+                                    <div class="strip-photo"><span
+                                            style="font-size:8px; color:#555; background:white; padding:1px 3px; margin-top: auto; margin-bottom:2px;">TIME
+                                            PHOTO</span></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="printer-interaction-overlay"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- BASE -->
+        <div class="base-assembly">
+            <div class="base-cream"></div>
+            <div class="base-lip"></div>
+            <div class="wheels">
+                <div class="wheel-unit">
+                    <div class="w-stem"></div>
+                    <div class="w-roll"></div>
+                </div>
+                <div class="wheel-unit">
+                    <div class="w-stem"></div>
+                    <div class="w-roll"></div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // =========================================
+        // 1. CORE VARIABLES & SETUP
+        // =========================================
+        const printerSheet = document.querySelector('.contact-sheet');
+        const modal = document.getElementById('downloadModal');
+        const modalImg = document.getElementById('modalImage');
+        const overlay = document.getElementById('printer-interaction-overlay');
+        let currentPrintImage = null;
+
+        // =========================================
+        // 2. MESSAGE HANDLING (From Editor)
+        // =========================================
+        window.addEventListener('message', (event) => {
+            if ((event.data.action === 'print' || event.data.type === 'PRINT_STRIP') && event.data.image) {
+                runPrintSequence(event.data.image);
+            }
+        });
+
+        // =========================================
+        // 3. PRINT SEQUENCE
+        // =========================================
+        function runPrintSequence(imageData) {
+            currentPrintImage = imageData;
+
+            const photoDivs = document.querySelectorAll('.strip-photo');
+            photoDivs.forEach(div => {
+                div.style.backgroundImage = `url(${imageData})`;
+                div.style.backgroundSize = 'cover';
+                div.style.backgroundPosition = 'center';
+                div.innerHTML = '';
+            });
+
+            printerSheet.classList.remove('printing');
+            void printerSheet.offsetWidth;
+            printerSheet.classList.add('printing');
+
+            if (overlay) overlay.style.display = 'block';
+
+            setTimeout(() => {
+                openModal(imageData);
+            }, 1500);
+        }
+
+        // =========================================
+        // 4. INTERACTION HANDLERS
+        // =========================================
+        printerSheet.addEventListener('click', () => {
+            if (printerSheet.classList.contains('printing') && currentPrintImage) {
+                openModal(currentPrintImage);
+            }
+        });
+
+        if (overlay) {
+            overlay.addEventListener('click', () => {
+                if (currentPrintImage) openModal(currentPrintImage);
+            });
+        }
+
+        // =========================================
+        // 5. MODAL LOGIC
+        // =========================================
+        function openModal(imgSrc) {
+            modalImg.src = imgSrc;
+            modal.classList.add('show');
+        }
+
+        window.closeModal = function () {
+            modal.classList.remove('show');
+        };
+
+        window.triggerDownload = function () {
+            if (!currentPrintImage) return;
+
+            // DIRECT DATA URI - Guarantees Correct Filename & Format
+            const a = document.createElement('a');
+            a.download = `TIME-PHOTO-${Date.now()}.png`;
+            a.href = currentPrintImage;
+
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        };
+
+
+        // =========================================
+        // 7. CLOSE MODAL ON OUTSIDE CLICK
+        // =========================================
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) window.closeModal();
+        });
+
+        // =========================================
+        // 8. RESPONSIVE SCALING
+        // =========================================
+
+
+        window.addEventListener('load', () => {
+            // scaleBooth removed
+            const leftCurtain = document.getElementById('c-left');
+            const rightCurtain = document.getElementById('c-right');
+
+            setTimeout(() => {
+                leftCurtain.classList.add('open');
+                rightCurtain.classList.add('open');
+            }, 1000);
+        });
+    </script>
+
+</body>
+
+</html>
