@@ -580,8 +580,8 @@
 
             /* Shift stage when panel is open to keep canvas visible */
             body.panel-active .stage {
-                padding-bottom: 45vh;
-                /* Push canvas up */
+                padding-bottom: 0;
+                transition: padding 0.3s;
             }
 
             /* Compact Styles for Panel Content */
@@ -1034,7 +1034,33 @@
         };
 
         window.updateSelection = (obj) => { activeObject = obj; renderPanel(document.querySelector('.tool-btn.active').dataset.id); };
-        function resizeWrapper() { const c = document.getElementById('stage'); const w = document.getElementById('canvas-wrapper'); if (!c || !w || !canvas) return; const cw = canvas.getWidth(); const ch = canvas.getHeight(); w.style.width = cw + 'px'; w.style.height = ch + 'px'; const scale = Math.min((c.clientWidth - 40) / cw, (c.clientHeight - 40) / ch); w.style.transform = `scale(${scale})`; }
+        function resizeWrapper() {
+            const c = document.getElementById('stage');
+            const w = document.getElementById('canvas-wrapper');
+            if (!c || !w || !canvas) return;
+
+            const cw = canvas.getWidth();
+            const ch = canvas.getHeight();
+            w.style.width = cw + 'px';
+            w.style.height = ch + 'px';
+
+            let availableH = c.clientHeight - 40;
+            // Subtract panel height if open
+            if (document.body.classList.contains('panel-active')) {
+                availableH -= 340; // Approx height of properties panel
+            }
+
+            // Allow more width usage on mobile
+            const availableW = c.clientWidth - (window.innerWidth < 600 ? 10 : 40);
+
+            const scale = Math.min(availableW / cw, availableH / ch);
+
+            w.style.transform = `scale(${Math.max(0.1, scale)})`; // Prevent invalid scale
+
+            // Adjust transform origin for smoother UX
+            w.style.transformOrigin = document.body.classList.contains('panel-active') ? 'center top' : 'center center';
+            w.style.marginTop = document.body.classList.contains('panel-active') ? '20px' : '0';
+        }
         document.getElementById('save-btn').onclick = () => { canvas.discardActiveObject(); canvas.requestRenderAll(); const url = canvas.toDataURL({ format: 'png', multiplier: 2 }); const a = document.createElement('a'); a.download = 'photobooth-pro.png'; a.href = url; document.body.appendChild(a); a.click(); document.body.removeChild(a); };
 
     </script>
