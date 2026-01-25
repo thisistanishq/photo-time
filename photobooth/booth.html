@@ -811,23 +811,22 @@
             /* 4. Side Controls: Floating Toolbar */
             .side-controls {
                 position: absolute;
-                top: 15%;
-                /* Vertically centered-ish but higher up */
+                top: 75px;
+                /* Fixed distance from top to clear Header */
                 right: 15px;
                 display: flex;
                 flex-direction: column;
-                gap: 15px;
+                gap: 12px;
                 z-index: 200;
                 background: rgba(0, 0, 0, 0.2);
-                /* Subtle container background for contrast */
-                padding: 10px 5px;
+                padding: 8px 4px;
                 border-radius: 30px;
                 backdrop-filter: blur(4px);
             }
 
             .icon-btn {
-                width: 42px;
-                height: 42px;
+                width: 38px;
+                height: 38px;
                 background: rgba(255, 255, 255, 0.15);
                 border: 1px solid rgba(255, 255, 255, 0.3);
                 box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
@@ -840,11 +839,11 @@
                 left: 0;
                 width: 100%;
                 height: auto;
-                min-height: 100px;
-                /* Reduced from 140px */
-                background: linear-gradient(to top, rgba(0, 0, 0, 0.8) 20%, transparent);
-                padding: 10px 15px 30px 15px;
-                /* Reduced padding */
+                min-height: 70px;
+                /* Slimmer */
+                background: linear-gradient(to top, rgba(0, 0, 0, 0.9) 10%, transparent);
+                padding: 10px 15px 15px 15px;
+                /* Much less padding */
                 display: grid;
                 grid-template-columns: 1fr auto 1fr;
                 gap: 5px;
@@ -868,30 +867,29 @@
             .deck-right {
                 flex-direction: column;
                 justify-content: flex-end;
-                padding-bottom: 15px;
+                padding-bottom: 12px;
                 overflow: hidden;
             }
 
             /* Shutter Button (Compact) */
             #shutter-btn {
-                width: 65px;
-                /* Reduced from 80px */
-                height: 65px;
+                width: 55px;
+                /* Small and sleek */
+                height: 55px;
                 border: 3px solid rgba(255, 255, 255, 0.7);
                 background: rgba(255, 255, 255, 0.15);
             }
 
             #shutter-btn::after {
-                width: 52px;
-                /* Reduced */
-                height: 52px;
+                width: 44px;
+                height: 44px;
             }
 
             /* Filters: Compact */
             .filter-strip {
                 display: flex;
-                gap: 8px;
-                padding: 5px 10px;
+                gap: 6px;
+                padding: 2px 10px;
                 justify-content: flex-start;
                 /* Ensure start alignment */
                 width: 100%;
@@ -900,14 +898,36 @@
             }
 
             .filter-chip {
-                min-width: 45px;
-                height: 45px;
-                border-width: 1.5px;
+                min-width: 40px;
+                height: 40px;
+                border-radius: 50%;
+                background: #ffffff;
+                border: 1.5px solid #ffffff;
+                backdrop-filter: none;
+                position: relative;
+                flex-shrink: 0;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .filter-chip.active {
+                border-color: var(--primary-accent);
+                background: var(--primary-accent);
+                box-shadow: 0 0 10px var(--primary-accent);
+                transform: scale(1.1);
             }
 
             .filter-chip span {
-                font-size: 0.55rem;
-                font-weight: 700;
+                display: block !important;
+                font-size: 0.5rem;
+                font-weight: 800;
+                text-transform: uppercase;
+                color: #000000;
+                text-align: center;
+                line-height: 1;
+                letter-spacing: 0.5px;
             }
 
             /* Gallery Preview Bubble (New) */
