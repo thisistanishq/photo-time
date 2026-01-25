@@ -168,10 +168,17 @@
         }
 
         .btn-ghost {
-            background: transparent;
-            color: var(--text-dark);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            /* Visible on dark bg */
+            background: #1565C0;
+            /* Default Deep Blue */
+            color: #fff;
+            border: 1px solid #1565C0;
+        }
+
+        .btn-ghost:hover {
+            background: #fff;
+            /* White on Hover */
+            color: #1565C0;
+            border-color: #1565C0;
         }
 
         .btn-icon-only {
@@ -183,18 +190,30 @@
 
         .btn-primary {
             background: #1565C0;
-            /* Deep Blue Theme */
+            /* Default Deep Blue */
             color: #fff;
+            border: 1px solid #1565C0;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         }
 
+        .btn-primary:hover {
+            background: #fff;
+            /* White on Hover */
+            color: #1565C0;
+            border-color: #1565C0;
+        }
+
         .btn:hover {
-            opacity: 0.8;
+            opacity: 1;
+            /* Disable opacity fade for solid color swap */
         }
 
         .btn:disabled {
             opacity: 0.3;
             cursor: not-allowed;
+            background: #ccc !important;
+            color: #666 !important;
+            border-color: #ccc !important;
         }
 
         /* --- TOOLBAR --- */
