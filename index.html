@@ -1644,6 +1644,7 @@
 
         window.closeModal = function () {
             modal.classList.remove('show');
+            if (overlay) overlay.style.display = 'none'; // FIX: Hide blocking overlay
         };
 
         window.triggerDownload = function () {
