@@ -414,7 +414,8 @@
 
         input[type="range"] {
             width: 100%;
-            accent-color: #000;
+            accent-color: #1565C0;
+            /* Deep Blue Theme */
         }
 
         select {
@@ -713,7 +714,12 @@
 
         function initCanvas() {
             canvas = new fabric.Canvas('c', { backgroundColor: '#ffffff', preserveObjectStacking: true, selection: true });
-            fabric.Object.prototype.transparentCorners = false; fabric.Object.prototype.cornerColor = '#ffffff'; fabric.Object.prototype.cornerStrokeColor = '#000000'; fabric.Object.prototype.borderColor = '#000000'; fabric.Object.prototype.cornerSize = 8; fabric.Object.prototype.padding = 4;
+            fabric.Object.prototype.transparentCorners = false;
+            fabric.Object.prototype.cornerColor = '#ffffff';
+            fabric.Object.prototype.cornerStrokeColor = '#1565C0'; /* Deep Blue */
+            fabric.Object.prototype.borderColor = '#1565C0'; /* Deep Blue */
+            fabric.Object.prototype.cornerSize = 8;
+            fabric.Object.prototype.padding = 4;
 
             canvas.on('selection:created', (e) => updateSelection(e.selected[0]));
             canvas.on('selection:updated', (e) => updateSelection(e.selected[0]));
