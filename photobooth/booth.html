@@ -726,15 +726,17 @@
                 /* Lock body */
                 width: 100%;
                 height: 100%;
+                background: #000;
+                /* Ensure black bars for video */
             }
 
             #app-container {
-                display: flex;
-                flex-direction: column;
+                display: block;
+                /* Remove flex column to allow absolute positioning layers */
                 height: 100%;
                 width: 100%;
                 padding: 0;
-                gap: 0;
+                position: relative;
             }
 
             /* 2. Header: Floating & Transparent */
@@ -744,35 +746,40 @@
                 left: 0;
                 width: 100%;
                 z-index: 50;
-                padding: 15px;
-                background: linear-gradient(to bottom, rgba(0, 0, 0, 0.6), transparent);
+                padding: 15px 20px;
+                background: linear-gradient(to bottom, rgba(0, 0, 0, 0.4), transparent);
                 color: #fff;
                 justify-content: space-between;
+                pointer-events: none;
+                /* Let clicks pass through to camera if needed */
+            }
+
+            header * {
+                pointer-events: auto;
             }
 
             header .logo {
-                font-size: 1.2rem;
-                color: #fff;
-                text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+                font-size: 1.1rem;
+                opacity: 0.8;
+                text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
             }
 
             .home-btn {
-                background: rgba(255, 255, 255, 0.2);
-                color: #fff;
-                border: 1px solid rgba(255, 255, 255, 0.4);
-                backdrop-filter: blur(10px);
-                font-size: 0.8rem;
-                padding: 6px 12px;
+                background: rgba(0, 0, 0, 0.3);
+                border: 1px solid rgba(255, 255, 255, 0.3);
+                font-size: 0.75rem;
+                padding: 5px 12px;
+                backdrop-filter: blur(4px);
             }
 
-            /* 3. Main Stage: Fill Screen */
+            /* 3. Main Stage: Fill Screen Absolute */
             .main-stage {
-                flex: 1;
-                /* Take all space */
+                position: absolute;
+                top: 0;
+                left: 0;
                 width: 100%;
-                height: auto;
-                background: #000;
-                position: relative;
+                height: 100%;
+                z-index: 0;
             }
 
             .camera-frame {
@@ -780,18 +787,20 @@
                 height: 100%;
                 border-radius: 0;
                 border: none;
-                aspect-ratio: auto;
-                /* Fill container */
-                margin-right: 0 !important;
-                /* Override desktop shift */
+                margin: 0 !important;
+                background: #000;
+                display: flex;
+                align-items: center;
+                justify-content: center;
             }
 
             video {
                 object-fit: contain;
-                /* Show full feed, might letterbox but no cropping */
+                /* Full visibility (letterbox if needed) */
                 width: 100%;
                 height: 100%;
-                background: #000;
+                max-width: 100%;
+                max-height: 100%;
             }
 
             /* Hide Layout Tag on Mobile to clean UI */
@@ -799,132 +808,106 @@
                 display: none;
             }
 
-            /* 4. Side Controls: Move to Top Right */
+            /* 4. Side Controls: Floating Toolbar */
             .side-controls {
-                top: 80px;
-                /* Below header with safe spacing */
-                right: 20px;
-                /* Ensure it's not on the edge */
-                background: transparent;
+                position: absolute;
+                top: 15%;
+                /* Vertically centered-ish but higher up */
+                right: 15px;
+                display: flex;
+                flex-direction: column;
                 gap: 15px;
-                transform: none;
                 z-index: 200;
+                background: rgba(0, 0, 0, 0.2);
+                /* Subtle container background for contrast */
+                padding: 10px 5px;
+                border-radius: 30px;
+                backdrop-filter: blur(4px);
             }
 
             .icon-btn {
-                width: 40px;
-                height: 40px;
-                background: rgba(0, 0, 0, 0.3);
-                /* Darker backdrop */
-                border: 1px solid rgba(255, 255, 255, 0.2);
+                width: 42px;
+                height: 42px;
+                background: rgba(255, 255, 255, 0.15);
+                border: 1px solid rgba(255, 255, 255, 0.3);
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
             }
 
-            /* 5. Footer Deck: Bottom Overlay */
+            /* 5. Footer Deck: Compact & Bottom */
             .control-deck {
                 position: absolute;
                 bottom: 0;
                 left: 0;
                 width: 100%;
                 height: auto;
-                min-height: 140px;
-                background: linear-gradient(to top, rgba(0, 0, 0, 0.9), transparent);
-                border: none;
-                border-radius: 0;
-                box-shadow: none;
-                padding: 20px 15px 40px 15px;
-                /* Extra padding for home bar */
-
+                min-height: 100px;
+                /* Reduced from 140px */
+                background: linear-gradient(to top, rgba(0, 0, 0, 0.8) 20%, transparent);
+                padding: 10px 15px 30px 15px;
+                /* Reduced padding */
                 display: grid;
                 grid-template-columns: 1fr auto 1fr;
-                gap: 10px;
+                gap: 5px;
                 align-items: end;
                 z-index: 60;
+                border: none;
+                box-shadow: none;
             }
 
             /* Deck Parts */
             .deck-left {
                 justify-content: flex-start;
-                padding-bottom: 25px;
-                /* Align with button center */
+                padding-bottom: 15px;
+                /* Align with center */
             }
 
             .deck-center {
-                padding-bottom: 15px;
+                padding-bottom: 5px;
             }
 
             .deck-right {
                 flex-direction: column;
                 justify-content: flex-end;
-                height: auto;
-                padding-bottom: 25px;
+                padding-bottom: 15px;
+                overflow: hidden;
             }
 
-            /* Shutter Button (Bigger) */
+            /* Shutter Button (Compact) */
             #shutter-btn {
-                width: 80px;
-                height: 80px;
-                border: 4px solid rgba(255, 255, 255, 0.8);
-                background: rgba(255, 255, 255, 0.2);
+                width: 65px;
+                /* Reduced from 80px */
+                height: 65px;
+                border: 3px solid rgba(255, 255, 255, 0.7);
+                background: rgba(255, 255, 255, 0.15);
             }
 
             #shutter-btn::after {
-                width: 66px;
-                height: 66px;
-                background: #fff;
-                /* White shutter for contrast */
+                width: 52px;
+                /* Reduced */
+                height: 52px;
             }
 
-            /* Filters: High Contrast & Spacing */
+            /* Filters: Compact */
             .filter-strip {
                 display: flex;
-                gap: 12px;
-                padding: 10px 30px;
-                /* More horizontal padding */
+                gap: 8px;
+                padding: 5px 10px;
                 justify-content: flex-start;
-                /* Align left to allow scrolling */
+                /* Ensure start alignment */
                 width: 100%;
-                overflow-x: auto;
-                /* Allow horizontal scroll if too many filters */
-                mask-image: none;
-                -webkit-mask-image: none;
+                mask-image: linear-gradient(to right, black 85%, transparent 100%);
+                -webkit-mask-image: linear-gradient(to right, black 85%, transparent 100%);
             }
 
             .filter-chip {
-                min-width: 50px;
-                height: 50px;
-                border-radius: 50%;
-                background: #ffffff;
-                border: 2px solid #ffffff;
-                backdrop-filter: none;
-                position: relative;
-                flex-shrink: 0;
-                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-                /* Center the text inside */
-                display: flex;
-                align-items: center;
-                justify-content: center;
-            }
-
-            .filter-chip.active {
-                border-color: var(--primary-accent);
-                background: var(--primary-accent);
-                box-shadow: 0 0 15px var(--primary-accent);
-                transform: scale(1.1);
+                min-width: 45px;
+                height: 45px;
+                border-width: 1.5px;
             }
 
             .filter-chip span {
-                display: block !important;
-                font-size: 0.6rem;
-                font-weight: 800;
-                text-transform: uppercase;
-                color: #000000;
-                text-align: center;
-                line-height: 1;
-                letter-spacing: 0.5px;
-            }
-
-            .filter-chip.active span {
-                color: #fff;
+                font-size: 0.55rem;
+                font-weight: 700;
             }
 
             /* Gallery Preview Bubble (New) */
