@@ -481,6 +481,10 @@
                 display: none;
             }
 
+            .hide-mobile {
+                display: none;
+            }
+
             /* Mobile doesn't need brand text saving space */
             .header-controls {
                 width: 100%;
@@ -668,7 +672,7 @@
                 <button class="btn btn-ghost" onclick="window.location.href='booth.html'"><i data-lucide="arrow-left"
                         style="width:16px"></i> Back</button>
                 <button class="btn btn-ghost" onclick="window.location.href='layout.html'"><i data-lucide="layout-grid"
-                        style="width:16px"></i> Change Layout</button>
+                        style="width:16px"></i> <span class="hide-mobile">Change </span>Layout</button>
                 <button class="btn btn-primary" onclick="printPhoto()"><i data-lucide="printer"></i> Print</button>
             </div>
         </header>
