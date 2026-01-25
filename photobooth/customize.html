@@ -489,12 +489,15 @@
             .header-controls {
                 width: 100%;
                 justify-content: space-between;
-                gap: 5px;
+                gap: 2px;
+                /* Tighter gap */
             }
 
             .header-controls .btn {
-                padding: 8px 12px;
-                font-size: 0.8rem;
+                padding: 8px 8px;
+                /* Tighter padding */
+                font-size: 0.75rem;
+                /* Slightly smaller text */
             }
 
             .btn-icon-only {
@@ -732,13 +735,22 @@
             setupToolbar();
             renderPanel('stickers');
 
-            document.getElementById('stage').onclick = (e) => {
-                // Only close if clicking stage background, not canvas objects (canvas handles that)
-                if (e.target.id === 'stage' || e.target.id === 'canvas-wrapper') {
-                    document.getElementById('panel').classList.remove('open');
+            // Global Click Outside Listener
+            document.addEventListener('click', (e) => {
+                const panel = document.getElementById('panel');
+                const isPanelOpen = panel.classList.contains('open');
+
+                // If clicked inside panel or on a toolbar button, do nothing
+                if (e.target.closest('.properties-panel') || e.target.closest('.tool-btn')) return;
+
+                // If panel is open and click is outside, close it
+                if (isPanelOpen) {
+                    panel.classList.remove('open');
+                    document.body.classList.remove('panel-active');
                     document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+                    setTimeout(resizeWrapper, 300); // Reset smooth resize
                 }
-            };
+            });
         });
 
         function initCanvas() {
