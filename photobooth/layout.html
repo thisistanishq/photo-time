@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
+    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -328,120 +328,37 @@
             }
         }
     </style>
+
+    <style>body { visibility: hidden; opacity: 0; }</style> <!-- Hide until loaded -->
 </head>
-
 <body>
-
-    <!-- Background Elements -->
-    <div class="aurora-bg">
-        <div class="aurora-blob blob-1"></div>
-        <div class="aurora-blob blob-2"></div>
-        <div class="aurora-blob blob-3"></div>
-    </div>
-
-    <!-- Main Content -->
-    <main class="main-container">
-        <header>
-            <h1>Choose Your <span>Vibe</span></h1>
-            <p class="subtitle">Curated layouts for your perfect moment</p>
-        </header>
-
-        <!-- Filter Bar -->
-        <div class="filter-bar">
-            <button class="filter-btn active" data-filter="all">All</button>
-            <button class="filter-btn" data-filter="aesthetic">Aesthetic</button>
-            <button class="filter-btn" data-filter="cute">Cute</button>
-            <button class="filter-btn" data-filter="vintage">Vintage</button>
-            <button class="filter-btn" data-filter="editorial">Editorial</button>
-        </div>
-
-        <div class="layout-grid" id="grid">
-            <!-- Items injected by JS -->
-        </div>
-    </main>
-
-    <script type="module">
-        import { LAYOUTS } from './layoutConfig.js';
-        import { renderLayout } from './renderer.js';
-
-        // Initialize Icons
-        lucide.createIcons();
-
-        const grid = document.getElementById('grid');
-        const filters = document.querySelectorAll('.filter-btn');
-
-        // Helper: Simple categorization
-        const getCategory = (id) => {
-            if (id.includes('vogu') || id.includes('film')) return 'editorial';
-            if (id.includes('cute') || id.includes('pink') || id.includes('cat')) return 'cute';
-            if (id.includes('vintage') || id.includes('retro')) return 'vintage';
-            return 'aesthetic'; // Default bucket
-        };
-
-        function renderGrid(filter = 'all') {
-            grid.innerHTML = '';
-
-            Object.entries(LAYOUTS).forEach(([id, config], index) => {
-                const category = getCategory(id);
-                if (filter !== 'all' && category !== filter) return;
-
-                // Card Wrapper
-                const card = document.createElement('div');
-                card.className = 'layout-card';
-                card.style.animationDelay = `${index * 50}ms`; // Staggered entry
-                card.onclick = () => selectLayout(id);
-
-                // Canvas
-                const canvas = document.createElement('canvas');
-                canvas.width = config.width || 600;
-                canvas.height = config.height || 1200;
-
-                const ctx = canvas.getContext('2d');
-                renderLayout(ctx, config);
-
-                // Info Footer
-                const info = document.createElement('div');
-                info.className = 'card-info';
-                info.innerHTML = `
-                    <span class="card-title">${id.replace(/_/g, ' ')}</span>
-                    <div class="select-btn"><i data-lucide="arrow-right" style="width:16px;"></i></div>
-                `;
-
-                card.appendChild(canvas);
-                card.appendChild(info);
-                grid.appendChild(card);
-            });
-
-            lucide.createIcons();
-        }
-
-        // Selection Logic
-        function selectLayout(id) {
-            localStorage.setItem('selectedLayout', id);
-
-            // Exit Animation
-            document.querySelector('main').style.opacity = '0';
-            document.querySelector('main').style.transform = 'translateY(-10px)';
-            document.querySelector('main').style.transition = 'all 0.4s ease';
-
-            setTimeout(() => {
-                window.location.href = 'booth.html';
-            }, 400);
-        }
-
-        // Filter Handlers
-        filters.forEach(btn => {
-            btn.addEventListener('click', () => {
-                filters.forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                renderGrid(btn.dataset.filter);
-            });
-        });
-
-        // Initial Render
-        renderGrid();
-
+    <script>
+        (function() {
+            var e = "CgogICAgPCEtLSBCYWNrZ3JvdW5kIEVsZW1lbnRzIC0tPgogICAgPGRpdiBjbGFzcz0iYXVyb3JhLWJnIj4KICAgICAgICA8ZGl2IGNsYXNzPSJhdXJvcmEtYmxvYiBibG9iLTEiPjwvZGl2PgogICAgICAgIDxkaXYgY2xhc3M9ImF1cm9yYS1ibG9iIGJsb2ItMiI+PC9kaXY+CiAgICAgICAgPGRpdiBjbGFzcz0iYXVyb3JhLWJsb2IgYmxvYi0zIj48L2Rpdj4KICAgIDwvZGl2PgoKICAgIDwhLS0gTWFpbiBDb250ZW50IC0tPgogICAgPG1haW4gY2xhc3M9Im1haW4tY29udGFpbmVyIj4KICAgICAgICA8aGVhZGVyPgogICAgICAgICAgICA8aDE+Q2hvb3NlIFlvdXIgPHNwYW4+VmliZTwvc3Bhbj48L2gxPgogICAgICAgICAgICA8cCBjbGFzcz0ic3VidGl0bGUiPkN1cmF0ZWQgbGF5b3V0cyBmb3IgeW91ciBwZXJmZWN0IG1vbWVudDwvcD4KICAgICAgICA8L2hlYWRlcj4KCiAgICAgICAgPCEtLSBGaWx0ZXIgQmFyIC0tPgogICAgICAgIDxkaXYgY2xhc3M9ImZpbHRlci1iYXIiPgogICAgICAgICAgICA8YnV0dG9uIGNsYXNzPSJmaWx0ZXItYnRuIGFjdGl2ZSIgZGF0YS1maWx0ZXI9ImFsbCI+QWxsPC9idXR0b24+CiAgICAgICAgICAgIDxidXR0b24gY2xhc3M9ImZpbHRlci1idG4iIGRhdGEtZmlsdGVyPSJhZXN0aGV0aWMiPkFlc3RoZXRpYzwvYnV0dG9uPgogICAgICAgICAgICA8YnV0dG9uIGNsYXNzPSJmaWx0ZXItYnRuIiBkYXRhLWZpbHRlcj0iY3V0ZSI+Q3V0ZTwvYnV0dG9uPgogICAgICAgICAgICA8YnV0dG9uIGNsYXNzPSJmaWx0ZXItYnRuIiBkYXRhLWZpbHRlcj0idmludGFnZSI+VmludGFnZTwvYnV0dG9uPgogICAgICAgICAgICA8YnV0dG9uIGNsYXNzPSJmaWx0ZXItYnRuIiBkYXRhLWZpbHRlcj0iZWRpdG9yaWFsIj5FZGl0b3JpYWw8L2J1dHRvbj4KICAgICAgICA8L2Rpdj4KCiAgICAgICAgPGRpdiBjbGFzcz0ibGF5b3V0LWdyaWQiIGlkPSJncmlkIj4KICAgICAgICAgICAgPCEtLSBJdGVtcyBpbmplY3RlZCBieSBKUyAtLT4KICAgICAgICA8L2Rpdj4KICAgIDwvbWFpbj4KCiAgICA8c2NyaXB0IHR5cGU9Im1vZHVsZSI+CiAgICAgICAgaW1wb3J0IHsgTEFZT1VUUyB9IGZyb20gJy4vbGF5b3V0Q29uZmlnLmpzJzsKICAgICAgICBpbXBvcnQgeyByZW5kZXJMYXlvdXQgfSBmcm9tICcuL3JlbmRlcmVyLmpzJzsKCiAgICAgICAgLy8gSW5pdGlhbGl6ZSBJY29ucwogICAgICAgIGx1Y2lkZS5jcmVhdGVJY29ucygpOwoKICAgICAgICBjb25zdCBncmlkID0gZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ2dyaWQnKTsKICAgICAgICBjb25zdCBmaWx0ZXJzID0gZG9jdW1lbnQucXVlcnlTZWxlY3RvckFsbCgnLmZpbHRlci1idG4nKTsKCiAgICAgICAgLy8gSGVscGVyOiBTaW1wbGUgY2F0ZWdvcml6YXRpb24KICAgICAgICBjb25zdCBnZXRDYXRlZ29yeSA9IChpZCkgPT4gewogICAgICAgICAgICBpZiAoaWQuaW5jbHVkZXMoJ3ZvZ3UnKSB8fCBpZC5pbmNsdWRlcygnZmlsbScpKSByZXR1cm4gJ2VkaXRvcmlhbCc7CiAgICAgICAgICAgIGlmIChpZC5pbmNsdWRlcygnY3V0ZScpIHx8IGlkLmluY2x1ZGVzKCdwaW5rJykgfHwgaWQuaW5jbHVkZXMoJ2NhdCcpKSByZXR1cm4gJ2N1dGUnOwogICAgICAgICAgICBpZiAoaWQuaW5jbHVkZXMoJ3ZpbnRhZ2UnKSB8fCBpZC5pbmNsdWRlcygncmV0cm8nKSkgcmV0dXJuICd2aW50YWdlJzsKICAgICAgICAgICAgcmV0dXJuICdhZXN0aGV0aWMnOyAvLyBEZWZhdWx0IGJ1Y2tldAogICAgICAgIH07CgogICAgICAgIGZ1bmN0aW9uIHJlbmRlckdyaWQoZmlsdGVyID0gJ2FsbCcpIHsKICAgICAgICAgICAgZ3JpZC5pbm5lckhUTUwgPSAnJzsKCiAgICAgICAgICAgIE9iamVjdC5lbnRyaWVzKExBWU9VVFMpLmZvckVhY2goKFtpZCwgY29uZmlnXSwgaW5kZXgpID0+IHsKICAgICAgICAgICAgICAgIGNvbnN0IGNhdGVnb3J5ID0gZ2V0Q2F0ZWdvcnkoaWQpOwogICAgICAgICAgICAgICAgaWYgKGZpbHRlciAhPT0gJ2FsbCcgJiYgY2F0ZWdvcnkgIT09IGZpbHRlcikgcmV0dXJuOwoKICAgICAgICAgICAgICAgIC8vIENhcmQgV3JhcHBlcgogICAgICAgICAgICAgICAgY29uc3QgY2FyZCA9IGRvY3VtZW50LmNyZWF0ZUVsZW1lbnQoJ2RpdicpOwogICAgICAgICAgICAgICAgY2FyZC5jbGFzc05hbWUgPSAnbGF5b3V0LWNhcmQnOwogICAgICAgICAgICAgICAgY2FyZC5zdHlsZS5hbmltYXRpb25EZWxheSA9IGAke2luZGV4ICogNTB9bXNgOyAvLyBTdGFnZ2VyZWQgZW50cnkKICAgICAgICAgICAgICAgIGNhcmQub25jbGljayA9ICgpID0+IHNlbGVjdExheW91dChpZCk7CgogICAgICAgICAgICAgICAgLy8gQ2FudmFzCiAgICAgICAgICAgICAgICBjb25zdCBjYW52YXMgPSBkb2N1bWVudC5jcmVhdGVFbGVtZW50KCdjYW52YXMnKTsKICAgICAgICAgICAgICAgIGNhbnZhcy53aWR0aCA9IGNvbmZpZy53aWR0aCB8fCA2MDA7CiAgICAgICAgICAgICAgICBjYW52YXMuaGVpZ2h0ID0gY29uZmlnLmhlaWdodCB8fCAxMjAwOwoKICAgICAgICAgICAgICAgIGNvbnN0IGN0eCA9IGNhbnZhcy5nZXRDb250ZXh0KCcyZCcpOwogICAgICAgICAgICAgICAgcmVuZGVyTGF5b3V0KGN0eCwgY29uZmlnKTsKCiAgICAgICAgICAgICAgICAvLyBJbmZvIEZvb3RlcgogICAgICAgICAgICAgICAgY29uc3QgaW5mbyA9IGRvY3VtZW50LmNyZWF0ZUVsZW1lbnQoJ2RpdicpOwogICAgICAgICAgICAgICAgaW5mby5jbGFzc05hbWUgPSAnY2FyZC1pbmZvJzsKICAgICAgICAgICAgICAgIGluZm8uaW5uZXJIVE1MID0gYAogICAgICAgICAgICAgICAgICAgIDxzcGFuIGNsYXNzPSJjYXJkLXRpdGxlIj4ke2lkLnJlcGxhY2UoL18vZywgJyAnKX08L3NwYW4+CiAgICAgICAgICAgICAgICAgICAgPGRpdiBjbGFzcz0ic2VsZWN0LWJ0biI+PGkgZGF0YS1sdWNpZGU9ImFycm93LXJpZ2h0IiBzdHlsZT0id2lkdGg6MTZweDsiPjwvaT48L2Rpdj4KICAgICAgICAgICAgICAgIGA7CgogICAgICAgICAgICAgICAgY2FyZC5hcHBlbmRDaGlsZChjYW52YXMpOwogICAgICAgICAgICAgICAgY2FyZC5hcHBlbmRDaGlsZChpbmZvKTsKICAgICAgICAgICAgICAgIGdyaWQuYXBwZW5kQ2hpbGQoY2FyZCk7CiAgICAgICAgICAgIH0pOwoKICAgICAgICAgICAgbHVjaWRlLmNyZWF0ZUljb25zKCk7CiAgICAgICAgfQoKICAgICAgICAvLyBTZWxlY3Rpb24gTG9naWMKICAgICAgICBmdW5jdGlvbiBzZWxlY3RMYXlvdXQoaWQpIHsKICAgICAgICAgICAgbG9jYWxTdG9yYWdlLnNldEl0ZW0oJ3NlbGVjdGVkTGF5b3V0JywgaWQpOwoKICAgICAgICAgICAgLy8gRXhpdCBBbmltYXRpb24KICAgICAgICAgICAgZG9jdW1lbnQucXVlcnlTZWxlY3RvcignbWFpbicpLnN0eWxlLm9wYWNpdHkgPSAnMCc7CiAgICAgICAgICAgIGRvY3VtZW50LnF1ZXJ5U2VsZWN0b3IoJ21haW4nKS5zdHlsZS50cmFuc2Zvcm0gPSAndHJhbnNsYXRlWSgtMTBweCknOwogICAgICAgICAgICBkb2N1bWVudC5xdWVyeVNlbGVjdG9yKCdtYWluJykuc3R5bGUudHJhbnNpdGlvbiA9ICdhbGwgMC40cyBlYXNlJzsKCiAgICAgICAgICAgIHNldFRpbWVvdXQoKCkgPT4gewogICAgICAgICAgICAgICAgd2luZG93LmxvY2F0aW9uLmhyZWYgPSAnYm9vdGguaHRtbCc7CiAgICAgICAgICAgIH0sIDQwMCk7CiAgICAgICAgfQoKICAgICAgICAvLyBGaWx0ZXIgSGFuZGxlcnMKICAgICAgICBmaWx0ZXJzLmZvckVhY2goYnRuID0+IHsKICAgICAgICAgICAgYnRuLmFkZEV2ZW50TGlzdGVuZXIoJ2NsaWNrJywgKCkgPT4gewogICAgICAgICAgICAgICAgZmlsdGVycy5mb3JFYWNoKGIgPT4gYi5jbGFzc0xpc3QucmVtb3ZlKCdhY3RpdmUnKSk7CiAgICAgICAgICAgICAgICBidG4uY2xhc3NMaXN0LmFkZCgnYWN0aXZlJyk7CiAgICAgICAgICAgICAgICByZW5kZXJHcmlkKGJ0bi5kYXRhc2V0LmZpbHRlcik7CiAgICAgICAgICAgIH0pOwogICAgICAgIH0pOwoKICAgICAgICAvLyBJbml0aWFsIFJlbmRlcgogICAgICAgIHJlbmRlckdyaWQoKTsKCiAgICA8L3NjcmlwdD4K";
+            var d = atob(e); // Decode
+            // Safe injection:
+            document.body.innerHTML = d;
+            
+            // Restore visibility
+            document.body.style.visibility = 'visible'; 
+            document.body.style.opacity = '1';
+            
+            // Re-run scripts in the injected content? 
+            // innerHTML does NOT execute <script> tags automatically.
+            // We need to manually execute them.
+            
+            var scripts = document.body.getElementsByTagName("script");
+            for (var i = 0; i < scripts.length; i++) {
+                var oldScript = scripts[i];
+                var newScript = document.createElement("script");
+                newScript.text = oldScript.text;
+                if (oldScript.src) newScript.src = oldScript.src;
+                if (oldScript.type) newScript.type = oldScript.type;
+                oldScript.parentNode.replaceChild(newScript, oldScript);
+            }
+            
+            console.log("Secure Content Loaded");
+        })();
     </script>
 </body>
-
 </html>

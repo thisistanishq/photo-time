@@ -1,57 +1,83 @@
 /**
- * PHOTOBOOTH SECURITY MODULE
- * Enforces anti-tamper, anti-debug, and interaction restrictions.
+ * PHOTOBOOTH SECURITY MODULE - DEFCON 1
+ * Enforces strict anti-tamper, anti-debug, and interaction blocks.
  */
 
 (function () {
-    console.log("%cSTOP!", "color: red; font-size: 30px; font-weight: bold;");
-    console.log("This application is protected. Unauthorized access is prohibited.");
+    // 0. Neutralize Console
+    const noop = () => { };
+    ['log', 'debug', 'info', 'warn', 'error', 'table', 'trace'].forEach(method => {
+        console[method] = noop;
+    });
 
     // 1. Disable Right Click
-    document.addEventListener('contextmenu', event => event.preventDefault());
+    document.addEventListener('contextmenu', event => {
+        event.preventDefault();
+        return false;
+    });
 
-    // 2. Disable DevTool Shortcuts
+    // 2. Aggressive Shortcut Blocking
     document.addEventListener('keydown', function (e) {
-        // F12
+        // F12 key
         if (e.key === 'F12') {
             e.preventDefault();
+            e.stopPropagation();
             return false;
         }
 
-        // Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+Shift+C (Windows/Linux)
-        // Cmd+Option+I, Cmd+Option+J, Cmd+Option+C (Mac)
-        if ((e.ctrlKey || e.metaKey) && (e.shiftKey || e.altKey) && ['I', 'J', 'C', 'i', 'j', 'c'].includes(e.key)) {
-            e.preventDefault();
-            return false;
+        // CTRL or CMD combinations
+        if (e.ctrlKey || e.metaKey) {
+            const key = e.key.toLowerCase();
+
+            // Blocked Keys: 
+            // u (Source), s (Save), p (Print), f (Find - optional but good for hiding), 
+            // i, j, c (DevTools), k (Console)
+            if (['u', 's', 'p', 'f', 'i', 'j', 'c', 'k', 'h'].includes(key)) {
+                e.preventDefault();
+                e.stopPropagation();
+                return false;
+            }
+
+            // Block Shift combinations (Ctrl+Shift+I, etc.)
+            if (e.shiftKey && ['i', 'j', 'c', 'k'].includes(key)) {
+                e.preventDefault();
+                e.stopPropagation();
+                return false;
+            }
         }
 
-        // Ctrl+U (View Source)
-        if ((e.ctrlKey || e.metaKey) && (e.key === 'u' || e.key === 'U')) {
+        // Block Alt combinations (often used for menus)
+        if (e.altKey) {
             e.preventDefault();
-            return false;
         }
+    }, true); // Capture phase
+
+    // 3. Disable Selection & Dragging
+    const prevent = e => e.preventDefault();
+    document.addEventListener('dragstart', prevent);
+    ['selectstart', 'copy', 'cut', 'paste'].forEach(ev => {
+        document.addEventListener(ev, prevent);
     });
 
-    // 3. Disable Selection & Dragging (JS Backup for CSS)
-    document.addEventListener('dragstart', event => event.preventDefault());
-    document.addEventListener('selectstart', event => {
-        // Allow selection in input fields
-        if (event.target.tagName !== 'INPUT' && event.target.tagName !== 'TEXTAREA') {
-            event.preventDefault();
-        }
-    });
-
-    // 4. Anti-Debugger Trap
-    // Throws a debugger breakpoint loop if DevTools opens
+    // 4. Anti-Debugger / DevTools Detector
+    // Uses a timing attack to detect if the thread is paused by a debugger
     setInterval(() => {
-        const start = new Date().getTime();
-        debugger;
-        const end = new Date().getTime();
+        const start = performance.now();
+        debugger; // This will pause execution if DevTools is open
+        const end = performance.now();
+
+        // If execution paused effectively for > 100ms, DevTools is likely open
         if (end - start > 100) {
-            // DevTools likely open
-            document.body.innerHTML = '<div style="display:flex;justify-content:center;align-items:center;height:100vh;background:#000;color:red;font-size:2rem;font-weight:bold;">SECURITY VIOLATION DETECTED</div>';
+            document.body.innerHTML = '<div style="background:black;color:red;height:100vh;display:flex;justify-content:center;align-items:center;font-size:3rem;font-weight:bold;text-align:center;">ILLEGAL ACTION DETECTED<br>ACCESS DENIED</div>';
+            // Throw error to break execution stack
             throw new Error("Security Violation");
         }
-    }, 2000);
+    }, 1000);
+
+    // 5. Bot/Headless Check (Basic)
+    if (navigator.webdriver || window.callPhantom || window._phantom) {
+        document.body.innerHTML = '<h1>Access Denied: Automated Browser Detected</h1>';
+        throw new Error("Bot Detected");
+    }
 
 })();
