@@ -326,18 +326,24 @@
 
         .tab {
             padding: 6px 12px;
-            background: #f5f5f5;
+            background: #1565C0;
+            /* Default Deep Blue */
+            color: #fff;
             border-radius: 4px;
             font-size: 0.75rem;
             font-weight: 600;
             cursor: pointer;
             transition: 0.2s;
+            border: 1px solid #1565C0;
         }
 
+        .tab:hover,
         .tab.active {
-            background: #1565C0;
-            /* Deep Blue Active */
-            color: #fff;
+            background: #fff;
+            /* White on Hover/Active */
+            color: #1565C0;
+            /* Blue Text */
+            border-color: #1565C0;
         }
 
         .grid-4 {
@@ -378,24 +384,24 @@
 
         .filter-btn {
             padding: 12px;
-            background: #fff;
+            background: #1565C0;
+            /* Default Deep Blue */
+            color: #fff;
             border-radius: 6px;
             text-align: center;
             font-size: 0.8rem;
             font-weight: 500;
-            border: 1px solid #eee;
+            border: 1px solid #1565C0;
             cursor: pointer;
             transition: 0.2s;
         }
 
-        .filter-btn:hover {
-            border-color: #1565C0;
-        }
-
+        .filter-btn:hover,
         .filter-btn.active {
-            background: #1565C0;
-            /* Deep Blue Active */
-            color: #fff;
+            background: #fff;
+            /* White on Hover/Active */
+            color: #1565C0;
+            /* Blue Text */
             border-color: #1565C0;
         }
 
