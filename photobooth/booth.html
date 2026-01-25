@@ -17,15 +17,16 @@
     <style>
         /* --- CORE VARIABLES (Synced with layout.html) --- */
         :root {
-            --bg-light: #FDFCF8;
-            --text-dark: #2D3436;
-            --glass: rgba(255, 255, 255, 0.25);
-            --glass-border: rgba(255, 255, 255, 0.4);
-            --card-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
-            /* Softer shadow */
-            --primary-accent: #6A5ACD;
-            /* Deeper purple/blue */
-            --secondary-accent: #8A2BE2;
+            --bg-light: #1565C0;
+            /* Deep Blue Background */
+            --text-dark: #FFFFFF;
+            /* White Text */
+            --glass: rgba(255, 255, 255, 0.15);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --card-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            --primary-accent: #03A9F4;
+            /* Sky Blue */
+            --secondary-accent: #0288D1;
             --danger: #FF6347;
         }
 
@@ -48,7 +49,7 @@
             flex-direction: column;
         }
 
-        /* --- AURORA BACKGROUND --- */
+        /* --- BLUE GRADIENT AURORA BACKGROUND --- */
         .aurora-bg {
             position: fixed;
             top: 0;
@@ -56,7 +57,8 @@
             width: 100%;
             height: 100%;
             z-index: -1;
-            background: #FDFCF8;
+            background: linear-gradient(135deg, #0D47A1, #1565C0, #1976D2);
+            /* Blue Gradient */
             overflow: hidden;
         }
 
@@ -64,7 +66,7 @@
             position: absolute;
             border-radius: 50%;
             filter: blur(80px);
-            opacity: 0.6;
+            opacity: 0.4;
             animation: float 20s infinite alternate cubic-bezier(0.4, 0, 0.2, 1);
         }
 
@@ -73,7 +75,8 @@
             left: -10%;
             width: 50vw;
             height: 50vw;
-            background: #B3E5FC;
+            background: #42A5F5;
+            /* Lighter Blue */
             animation-delay: 0s;
         }
 
@@ -82,7 +85,8 @@
             right: -10%;
             width: 60vw;
             height: 60vw;
-            background: #E0F7FA;
+            background: #039BE5;
+            /* Deep Sky Blue */
             animation-delay: -5s;
         }
 
@@ -91,7 +95,8 @@
             left: 40%;
             width: 40vw;
             height: 40vw;
-            background: #E6E6FA;
+            background: #64B5F6;
+            /* Accent Blue */
             animation-delay: -10s;
             opacity: 0.6;
         }
@@ -917,6 +922,11 @@
                 background: var(--primary-accent);
                 box-shadow: 0 0 10px var(--primary-accent);
                 transform: scale(1.1);
+            }
+
+            .filter-chip.active span {
+                color: #000;
+                /* Force black text */
             }
 
             .filter-chip span {
