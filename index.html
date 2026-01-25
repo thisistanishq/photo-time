@@ -10,9 +10,9 @@
         href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@700;800;900&family=Grand+Hotel&display=swap"
         rel="stylesheet">
     <!-- SECURITY PROTOCOLS -->
-    <!-- Content Security Policy: Restrict sources to self and known CDNs (Google Fonts, etc.) -->
+    <!-- Content Security Policy: Allow HTTPS scripts for CDNs (unpkg, cdnjs, etc.) -->
     <meta http-equiv="Content-Security-Policy"
-        content="default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob:; img-src 'self' data: blob: https:; font-src 'self' https: data:;">
+        content="default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: blob: https:; font-src 'self' data: https:;">
     <script src="photobooth/security.js"></script>
     <meta http-equiv="X-Content-Type-Options" content="nosniff">
 
