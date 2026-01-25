@@ -1295,7 +1295,33 @@
                 display: none;
                 background: transparent;
             }
+
+            /* --- CRITICAL: Immediate Open State (Render Blocking) --- */
+            html.immediate-open .curtain.left {
+                transform: translateX(-90%) scaleX(0.35) !important;
+                transition: none !important;
+            }
+
+            html.immediate-open .curtain.right {
+                transform: translateX(90%) scaleX(0.35) !important;
+                transition: none !important;
+            }
+
+            html.immediate-open .curtain .sticker-layer {
+                opacity: 0.6 !important;
+                transition: none !important;
+            }
     </style>
+    <script>
+        // IMMEDIATE STATE CHECK (Before Body Render)
+        try {
+            if (sessionStorage.getItem('boothOpen')) {
+                document.documentElement.classList.add('immediate-open');
+            }
+        } catch (e) {
+            console.error("Session Storage Check Failed", e);
+        }
+    </script>
 </head>
 
 <body>
@@ -1644,31 +1670,19 @@
             const leftCurtain = document.getElementById('c-left');
             const rightCurtain = document.getElementById('c-right');
 
-            // check session
-            if (sessionStorage.getItem('boothOpen')) {
-                // Already open - instant
+            if (document.documentElement.classList.contains('immediate-open')) {
+                // Already handled by CSS, just sync state in case of future interactions
                 leftCurtain.classList.add('open');
                 rightCurtain.classList.add('open');
-                // Ensure no transition for the instant open? 
-                // We can temporarily disable transition or just adding the class is enough if the CSS doesn't force a delay 
-                // The CSS 'transition' handles the duration. Ideally we'd remove it for a split second, but 
-                // just adding class is usually fine, it will animate "from 0 to open" instantly if the DOM wasn't painted yet? 
-                // No, standard behavior is it will animate.
-                // Let's force skip transition.
-                leftCurtain.style.transition = 'none';
-                rightCurtain.style.transition = 'none';
-                
-                // Force reflow
-                void leftCurtain.offsetWidth; 
 
-                // Restore (optional if we never close them again, but good practice)
-                setTimeout(() => {
-                    leftCurtain.style.transition = '';
-                    rightCurtain.style.transition = '';
-                }, 100);
-
+                // Remove the force-class after a short delay to allow normal animations if needed later
+                requestAnimationFrame(() => {
+                    setTimeout(() => {
+                        document.documentElement.classList.remove('immediate-open');
+                    }, 100);
+                });
             } else {
-                // First load - delay
+                // First load -> Animate normally
                 setTimeout(() => {
                     leftCurtain.classList.add('open');
                     rightCurtain.classList.add('open');
